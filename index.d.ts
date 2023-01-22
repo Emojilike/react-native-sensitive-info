@@ -40,6 +40,7 @@ export interface RNSensitiveInfoOptions {
   kSecUseOperationPrompt?: string;
   kLocalizedFallbackTitle?: string;
   strings?: RNSensitiveInfoAndroidDialogStrings;
+  accessGroup?: string;
 }
 
 export declare function setItem(

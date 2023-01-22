@@ -129,6 +129,11 @@ RCT_EXPORT_METHOD(setItem:(NSString*)key value:(NSString*)value options:(NSDicti
     NSMutableDictionary *query = [search mutableCopy];
     [query setValue: valueData forKey: kSecValueData];
 
+    NSString *accessGroup = [RCTConvert NSString:options[@"accessGroup"]];
+    if (accessGroup != nil) {
+        [query setObject:accessGroup forKey:(__bridge NSString *)kSecAttrAccessGroup];
+    }
+
     if([RCTConvert BOOL:options[@"touchID"]]){
         CFStringRef kSecAccessControlValue = convertkSecAccessControl([RCTConvert NSString:options[@"kSecAccessControl"]]);
         SecAccessControlRef sac = SecAccessControlCreateWithFlags(kCFAllocatorDefault, kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly, kSecAccessControlValue, NULL);
@@ -178,6 +183,11 @@ RCT_EXPORT_METHOD(getItem:(NSString *)key options:(NSDictionary *)options resolv
                                   kCFBooleanTrue, kSecReturnData,
                                   nil];
     
+    NSString *accessGroup = [RCTConvert NSString:options[@"accessGroup"]];
+    if (accessGroup != nil) {
+        [query setObject:accessGroup forKey:(__bridge NSString *)kSecAttrAccessGroup];
+    }
+
     if([RCTConvert NSString:options[@"kSecUseOperationPrompt"]] != NULL){
         [query setValue:[RCTConvert NSString:options[@"kSecUseOperationPrompt"]] forKey:(NSString *)kSecUseOperationPrompt];
     }
@@ -236,7 +246,11 @@ RCT_EXPORT_METHOD(hasItem:(NSString *)key options:(NSDictionary *)options resolv
                                   kCFBooleanTrue, kSecReturnData,
                                   nil];
 
-    
+    NSString *accessGroup = [RCTConvert NSString:options[@"accessGroup"]];
+    if (accessGroup != nil) {
+        [query setObject:accessGroup forKey:(__bridge NSString *)kSecAttrAccessGroup];
+    }
+
     dispatch_async(dispatch_get_main_queue(), ^{
         if (UIApplication.sharedApplication.protectedDataAvailable) {
             // Look up server in the keychain
@@ -291,6 +305,7 @@ RCT_EXPORT_METHOD(hasItem:(NSString *)key options:(NSDictionary *)options resolv
 RCT_EXPORT_METHOD(getAllItems:(NSDictionary *)options resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject){
     
     NSString * keychainService = [RCTConvert NSString:options[@"keychainService"]];
+    NSString *accessGroup = [RCTConvert NSString:options[@"accessGroup"]];
     
     NSMutableArray* finalResult = [[NSMutableArray alloc] init];
     NSMutableDictionary *query = [NSMutableDictionary dictionaryWithObjectsAndKeys:
@@ -303,6 +318,11 @@ RCT_EXPORT_METHOD(getAllItems:(NSDictionary *)options resolver:(RCTPromiseResolv
     if (keychainService) {
         [query setObject:keychainService forKey:(NSString *)kSecAttrService];
     }
+
+    if (accessGroup != nil) {
+        [query setObject:accessGroup forKey:(__bridge NSString *)kSecAttrAccessGroup];
+    }
+
     
     NSArray *secItemClasses = [NSArray arrayWithObjects:
                                (__bridge id)kSecClassGenericPassword,
@@ -353,18 +373,24 @@ RCT_EXPORT_METHOD(deleteItem:(NSString *)key options:(NSDictionary *)options res
         keychainService = @"app";
     }
     
+    NSString *accessGroup = [RCTConvert NSString:options[@"accessGroup"]];
+
     NSNumber *sync = options[@"kSecAttrSynchronizable"];
     if (sync == NULL)
         sync = (__bridge id)kSecAttrSynchronizableAny;
 
     // Create dictionary of search parameters
-    NSDictionary* query = [NSDictionary dictionaryWithObjectsAndKeys:
+    NSMutableDictionary* query = [NSMutableDictionary dictionaryWithObjectsAndKeys:
                           (__bridge id)(kSecClassGenericPassword), kSecClass,
                           sync, kSecAttrSynchronizable,
                           keychainService, kSecAttrService,
                           key, kSecAttrAccount,
                           kCFBooleanTrue, kSecReturnAttributes,
                           kCFBooleanTrue, kSecReturnData, nil];
+
+    if (accessGroup != nil) {
+        [query setObject:accessGroup forKey:(__bridge NSString *)kSecAttrAccessGroup];
+    }
 
     // Remove any old values from the keychain
     OSStatus osStatus = SecItemDelete((__bridge CFDictionaryRef) query);
