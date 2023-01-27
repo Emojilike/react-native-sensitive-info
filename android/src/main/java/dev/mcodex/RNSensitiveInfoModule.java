@@ -700,6 +700,10 @@ public class RNSensitiveInfoModule extends ReactContextBaseJavaModule {
             throw new RuntimeException("encrypted argument can't be null", cause);
         }
 
+        if (encrypted.length() == 0) {
+            return encrypted;
+        }
+
         Cipher c;
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
