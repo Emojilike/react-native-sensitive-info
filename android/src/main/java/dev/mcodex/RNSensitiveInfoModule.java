@@ -655,6 +655,10 @@ public class RNSensitiveInfoModule extends ReactContextBaseJavaModule {
     }
 
     public String encrypt(String input) throws Exception {
+        if (input == null || input.length() == 0) {
+            return input;
+        }
+
         byte[] bytes = input.getBytes();
         Cipher c;
 
